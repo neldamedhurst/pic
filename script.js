@@ -5,12 +5,11 @@ const randomUseragent = require('random-useragent');
 puppeteer.use(StealthPlugin());
 
 const urls = [
- 'https://piclinks.in/directlink?id=468332'
+    'https://piclinks.in/directlink?id=468332'
 ];
 
 const referers = [
-    'https://piclinks.in/directlink?id=468332'
-	 'https://www.google.com/',
+    'https://www.google.com/',
     'https://www.facebook.com/',
     'https://www.twitter.com/',
     'https://www.linkedin.com/',
@@ -60,7 +59,6 @@ const referers = [
     'https://www.samsclub.com/',
     'https://www.newegg.com/',
     'https://www.wayfair.com/'
-
 ];
 
 const proxyUrl = 'gw.dataimpulse.com:823';
