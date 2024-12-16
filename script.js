@@ -9,7 +9,6 @@ const urls = [
 ];
 
 const referers = [
-    'https://piclinks.in/directlink?id=468332',
     'https://www.google.com/',
     'https://www.facebook.com/',
     'https://www.twitter.com/',
@@ -72,19 +71,12 @@ function getRandomInt(min, max) {
 
 async function simulateHumanInteraction(page) {
     console.log('Scrolling the page fast');
-
     let scrollHeight = await page.evaluate(() => document.body.scrollHeight);
 
-    while (true) {
-        const hasMoreScroll = await page.evaluate(() => {
-            const scrollPosition = window.scrollY + window.innerHeight;
-            return scrollPosition < document.body.scrollHeight;
-        });
-
-        if (!hasMoreScroll) break;
-
+    while (scrollHeight > 0) {
         await page.evaluate(() => window.scrollBy(0, window.innerHeight));
         await page.waitForTimeout(getRandomInt(500, 1000)); // Faster scrolling
+        scrollHeight -= window.innerHeight;
     }
 
     await page.waitForTimeout(getRandomInt(2000, 5000));
@@ -103,6 +95,9 @@ async function handleIframe(page) {
         }
     } else {
         console.log('No iframe found on the page');
+        // Optionally, log the page content to understand its structure
+        const pageContent = await page.content();
+        console.log('Page content:', pageContent);
     }
 }
 
@@ -129,17 +124,18 @@ async function visitAndInteract(browser, url) {
     try {
         await page.authenticate({ username: proxyUsername, password: proxyPassword });
 
-        // Listen to the page navigation and wait for idle state
         const navigationPromise = page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 60000 });
 
         await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
 
-        await navigationPromise; // Ensure navigation is complete
+        await navigationPromise;
 
         console.log(`Visiting URL: ${url}`);
         await page.waitForTimeout(getRandomInt(3000, 5000));
 
         await simulateHumanInteraction(page);
+
+        // Only call handleIframe if iframe is present
         await handleIframe(page);
 
         console.log('Interaction complete');
