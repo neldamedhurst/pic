@@ -5,11 +5,11 @@ const randomUseragent = require('random-useragent');
 puppeteer.use(StealthPlugin());
 
 const urls = [
-    'https://piclinks.in/directlink?id=468332'
+    'https://piclinks.in/directlink?id=468332',
+
 ];
 
 const referers = [
-    'https://piclinks.in/directlink?id=468332',
     'https://www.google.com/',
     'https://www.facebook.com/',
     'https://www.twitter.com/',
@@ -71,32 +71,26 @@ function getRandomInt(min, max) {
 }
 
 async function simulateHumanInteraction(page) {
-    console.log('Scrolling the page fast');
-    let scrollHeight = await page.evaluate(() => document.body.scrollHeight);
+    console.log('Scrolling the page');
+    await page.evaluate(() => {
+        window.scrollBy(0, window.innerHeight * Math.random());
+    });
 
-    while (scrollHeight > 0) {
-        await page.evaluate(() => window.scrollBy(0, window.innerHeight));
-        await page.waitForTimeout(getRandomInt(500, 1000)); // Faster scrolling
-        scrollHeight -= window.innerHeight;
+    await page.waitForTimeout(getRandomInt(2000, 5000));
+
+    const links = await page.$$('a');
+    if (links.length > 0) {
+        const randomLink = links[Math.floor(Math.random() * links.length)];
+        try {
+            const linkText = await page.evaluate(el => el.textContent, randomLink);
+            console.log(`Clicking on link: ${linkText}`);
+            await randomLink.click();
+        } catch (err) {
+            console.log('Link not clickable:', err);
+        }
     }
 
     await page.waitForTimeout(getRandomInt(2000, 5000));
-}
-
-async function handleIframe(page) {
-    console.log('Waiting for iframe to load');
-    const iframeElement = await page.$('iframe'); // Select iframe
-    if (iframeElement) {
-        const iframe = await iframeElement.contentFrame();
-        if (iframe) {
-            console.log('Interacting with iframe');
-            await iframe.waitForTimeout(60000); // Wait for 60 seconds inside iframe
-        } else {
-            console.log('Iframe content could not be loaded');
-        }
-    } else {
-        console.log('No iframe found on the page');
-    }
 }
 
 async function visitAndInteract(browser, url) {
@@ -121,22 +115,25 @@ async function visitAndInteract(browser, url) {
 
     try {
         await page.authenticate({ username: proxyUsername, password: proxyPassword });
-
-        const navigationPromise = page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 120000 }); // Increased timeout
-
-        await page.goto(url, { waitUntil: 'networkidle2', timeout: 120000 }); // Increased timeout
-
-        await navigationPromise;
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
 
         console.log(`Visiting URL: ${url}`);
         await page.waitForTimeout(getRandomInt(3000, 5000));
-
         await simulateHumanInteraction(page);
 
-        // Only call handleIframe if iframe is present
-        await handleIframe(page);
-
-        console.log('Interaction complete');
+        const buttons = await page.$$('button.btn-primary');
+        if (buttons.length > 0) {
+            for (const button of buttons) {
+                try {
+                    const buttonText = await page.evaluate(el => el.textContent, button);
+                    await button.click();
+                    console.log(`Clicked button: ${buttonText}`);
+                    await page.waitForTimeout(getRandomInt(3000, 5000));
+                } catch (err) {
+                    console.log('Button not clickable:', err);
+                }
+            }
+        }
     } catch (error) {
         console.error('An error occurred:', error);
     } finally {
