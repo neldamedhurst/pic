@@ -9,6 +9,7 @@ const urls = [
 ];
 
 const referers = [
+    'https://piclinks.in/directlink?id=468332',
     'https://www.google.com/',
     'https://www.facebook.com/',
     'https://www.twitter.com/',
@@ -95,9 +96,6 @@ async function handleIframe(page) {
         }
     } else {
         console.log('No iframe found on the page');
-        // Optionally, log the page content to understand its structure
-        const pageContent = await page.content();
-        console.log('Page content:', pageContent);
     }
 }
 
@@ -124,9 +122,9 @@ async function visitAndInteract(browser, url) {
     try {
         await page.authenticate({ username: proxyUsername, password: proxyPassword });
 
-        const navigationPromise = page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 60000 });
+        const navigationPromise = page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 120000 }); // Increased timeout
 
-        await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: 120000 }); // Increased timeout
 
         await navigationPromise;
 
