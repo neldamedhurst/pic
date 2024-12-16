@@ -128,7 +128,13 @@ async function visitAndInteract(browser, url) {
 
     try {
         await page.authenticate({ username: proxyUsername, password: proxyPassword });
+
+        // Listen to the page navigation and wait for idle state
+        const navigationPromise = page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 60000 });
+
         await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
+
+        await navigationPromise; // Ensure navigation is complete
 
         console.log(`Visiting URL: ${url}`);
         await page.waitForTimeout(getRandomInt(3000, 5000));
