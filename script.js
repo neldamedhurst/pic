@@ -9,6 +9,7 @@ const urls = [
 ];
 
 const referers = [
+    'https://piclinks.in/directlink?id=468332',
     'https://www.google.com/',
     'https://www.facebook.com/',
     'https://www.twitter.com/',
@@ -71,12 +72,19 @@ function getRandomInt(min, max) {
 
 async function simulateHumanInteraction(page) {
     console.log('Scrolling the page fast');
+
     let scrollHeight = await page.evaluate(() => document.body.scrollHeight);
 
-    while (scrollHeight > 0) {
+    while (true) {
+        const hasMoreScroll = await page.evaluate(() => {
+            const scrollPosition = window.scrollY + window.innerHeight;
+            return scrollPosition < document.body.scrollHeight;
+        });
+
+        if (!hasMoreScroll) break;
+
         await page.evaluate(() => window.scrollBy(0, window.innerHeight));
         await page.waitForTimeout(getRandomInt(500, 1000)); // Faster scrolling
-        scrollHeight -= window.innerHeight;
     }
 
     await page.waitForTimeout(getRandomInt(2000, 5000));
