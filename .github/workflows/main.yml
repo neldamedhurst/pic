@@ -1,28 +1,28 @@
-name: Build and Run Traffic Bot
+name: Traffic Bot Workflow
 
 on:
-  # Trigger the workflow on push or pull requests
-  [push, pull_request]
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      # Step 2: Set up Node.js environment
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16' # Specify the Node.js version
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
 
-      # Step 3: Install npm dependencies
-      - name: Install dependencies
-        run: npm install
+    - name: Install dependencies
+      run: npm install
 
-      # Step 4: Run the traffic bot
-      - name: Run traffic bot
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" npm start
+    - name: Run traffic bot
+      run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" npm start
